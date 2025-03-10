@@ -1,0 +1,11 @@
+**/.vscode
+**/.venv
+**/*.env
+**/.idea
+**/__pycache__
+**/experiments.py
+**/*.log
+**/logs
+**/*.pem
+**/certs
+**/.pytest_cache
