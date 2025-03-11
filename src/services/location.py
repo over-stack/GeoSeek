@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from src.schemas.location import LocationScheme, LocationStatus
+from src.schemas.location import LocationScheme, LocationStatus, LocationRead
 from src.db.repositories.location import LocationRepository
 
 from src.utils.location import generate_random_point, haversine_distance
@@ -11,28 +11,39 @@ class LocationService:
         self.location_repo = location_repo
 
     async def generate_location(self, user_id: int, location: LocationScheme) -> None:
+        if await self.location_repo.get_location(user_id) is not None:
+            raise ValueError("Location already exists")
         new_lat, new_lon = generate_random_point(
-            location.latitude, location.longitude, settings.params.LOCATION_RADIUS
+            location.lat, location.lon, settings.params.LOCATION_RADIUS
         )
         new_location = LocationScheme(
-            latitude=new_lat,
-            longitude=new_lon,
-            gen_at=datetime.now(timezone.utc),
+            lat=new_lat,
+            lon=new_lon,
         )
-        await self.location_repo.store_location(user_id, new_location)
+        await self.location_repo.init_location(user_id, location, new_location)
 
-    async def get_location(self, user_id: int) -> LocationScheme | None:
-        return await self.location_repo.get_location(user_id)
-
-    async def get_distance(
-        self, location1: LocationScheme, location2: LocationScheme
-    ) -> float:
-        return haversine_distance(
-            location1.latitude,
-            location1.longitude,
-            location2.latitude,
-            location2.longitude,
+    async def cancel_location(
+        self, user_id: int, location: LocationScheme
+    ) -> LocationRead:
+        return await self.location_repo.complete_location(
+            user_id,
+            location,
+            LocationStatus.CANCELLED,
         )
 
-    async def complete_location(self, user_id: int, status: LocationStatus) -> None:
-        await self.location_repo.delete_location(user_id)
+    async def track_location(
+        self, user_id: int, location: LocationScheme
+    ) -> tuple[LocationRead | None, float]:
+        dist = self.location_repo.track_location(user_id, location)
+        if dist > settings.params.LOCATION_EPS_M:
+            return None, dist
+        return (
+            await self.location_repo.complete_location(
+                user_id,
+                LocationStatus.SUCCESS,
+            ),
+            dist,
+        )
+
+    async def get_location_history(self, user_id: int) -> list[LocationRead]:
+        return await self.location_repo.get_location_history(user_id)

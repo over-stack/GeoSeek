@@ -1,5 +1,6 @@
 import random
 import math
+from shapely.geometry import LineString
 
 
 def generate_random_point(lat, lon, radius):
@@ -48,3 +49,35 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     distance = R * c
 
     return distance * 1000
+
+
+def kalman_filter(
+    lat: list[float],
+    lon: list[float],
+) -> tuple[list[float], list[float]]:
+    return lat, lon
+
+
+def optimize_path(
+    lat: list[float], lon: list[float], epsilon: float = 0.0001
+) -> tuple[list[float], list[float]]:
+    """Optimize the path using the Ramer-Douglas-Peucker algorithm from shapely."""
+    line = LineString(zip(lat, lon))
+    simplified_line = line.simplify(epsilon, preserve_topology=False)
+
+    optimized_lat, optimized_lon = zip(*simplified_line.coords)
+    return list(optimized_lat), list(optimized_lon)
+
+
+def split_lat_lon(coordinates: list[str]) -> tuple[list[float], list[float]]:
+    """Splits a list of 'lat:lon' strings into separate latitude and longitude lists."""
+    lat, lon = zip(*(map(float, coord.split(":")) for coord in coordinates))
+    return list(lat), list(lon)
+
+
+def calc_path_distance(lat: list[float], lon: list[float]) -> float:
+    """Calculate the total distance of a path."""
+    distance = 0
+    for i in range(1, len(lat)):
+        distance += haversine_distance(lat[i - 1], lon[i - 1], lat[i], lon[i])
+    return distance

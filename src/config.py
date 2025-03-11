@@ -48,6 +48,14 @@ class Credentials(BaseSettings):
     REDIS_DATABASES: int
     REDIS_DB: int
 
+    MONGO_INITDB_ROOT_USERNAME: str
+    MONGO_INITDB_ROOT_PASSWORD: str
+
+    ME_CONFIG_MONGODB_ADMINUSERNAME: str
+    ME_CONFIG_MONGODB_ADMINPASSWORD: str
+    ME_CONFIG_MONGODB_URL: str
+    ME_CONFIG_BASICAUTH: bool
+
     @property
     def DB_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"

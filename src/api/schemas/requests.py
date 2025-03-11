@@ -14,6 +14,6 @@ class UserRegister(BaseScheme):
     )
 
 
-class GenLocationRequest(BaseScheme):
-    latitude: float = Field(..., ge=-90, le=90)
-    longitude: float = Field(..., ge=-180, le=180)
+class LocationRequest(BaseScheme):
+    lat: float = Field(..., ge=-90, le=90)
+    lon: float = Field(..., ge=-180, le=180)
