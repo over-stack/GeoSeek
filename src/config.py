@@ -18,6 +18,7 @@ with open(BASE_DIR / "config.yaml", "r") as file:
 
 class AppParams(BaseModel):
     LOCATION_RADIUS: float = config["LOCATION_RADIUS"]
+    LOCATION_EPS_M: float = config["LOCATION_EPS_M"]
 
 
 class AuthJWT(BaseModel):

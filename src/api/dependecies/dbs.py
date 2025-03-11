@@ -10,5 +10,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def get_redis_client() -> aioredis.Redis:
-    return await redis_service.get_redis_client()
+async def get_redis_client() -> AsyncGenerator[aioredis.Redis, None]:
+    client = redis_service.connection_pool.client()
+    yield client
+    await client.aclose()

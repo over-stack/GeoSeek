@@ -1,5 +1,6 @@
 from src.schemas.base import BaseScheme
 from src.schemas.auth import TokenInfo
+from src.schemas.location import LocationScheme, LocationStatus
 
 
 class Tokens(BaseScheme):
@@ -10,3 +11,9 @@ class Tokens(BaseScheme):
 class Distance(BaseScheme):
     distance: float
     unit: str
+
+
+class CheckDistanceResponse(BaseScheme):
+    status: LocationStatus
+    location: LocationScheme | None = None
+    distance: Distance

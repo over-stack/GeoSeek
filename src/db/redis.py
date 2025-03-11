@@ -28,7 +28,7 @@ class RedisConnector:
         self.max_connections: int = max_connections
         self.socket_connect_timeout: float = socket_connect_timeout
         self.socket_timeout: float = socket_timeout
-        self.__connection_pool = aioredis.Redis(
+        self.connection_pool = aioredis.Redis(
             **self.config,
             socket_connect_timeout=self.socket_connect_timeout,
             socket_timeout=self.socket_timeout,
@@ -36,8 +36,8 @@ class RedisConnector:
             decode_responses=self.decode_responses,
         )
 
-    async def get_redis_client(self) -> aioredis.Redis:
-        return self.__connection_pool.client()
+    def get_connection_pool(self) -> aioredis.Redis:
+        return self.connection_pool
 
 
 redis_service = RedisConnector(
