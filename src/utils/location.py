@@ -47,4 +47,4 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     # Distance in kilometers
     distance = R * c
 
-    return distance
+    return distance * 1000

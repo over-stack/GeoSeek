@@ -5,6 +5,9 @@ from src.schemas.auth import TokenInfo, TokenType
 from src.utils.auth import encode_jwt, decode_jwt, hash_password, check_password
 from src.db.repositories.auth import AuthRepository
 from src.config import settings
+from src.exceptions.auth import InvalidTokenType, TokenNotFoundError
+
+from src.config import main_logger
 
 
 class AuthService:
@@ -37,7 +40,7 @@ class AuthService:
         )
 
         jti = decode_jwt(token)["jti"]
-        self.auth_repo.store_refresh_token(user_id=user.id, jti=jti)
+        await self.auth_repo.store_refresh_token(user_id=user.id, jti=jti)
 
         return TokenInfo(token=token)
 
@@ -49,20 +52,21 @@ class AuthService:
             return payload
 
         if payload["type"] != tokenType.name:
-            raise ValueError("Invalid token type")
+            raise InvalidTokenType(token_type=tokenType.name)
 
         if payload["type"] == TokenType.REFRESH.name:
+            print("HIIIII")
             if not await self.auth_repo.check_refresh_token(
                 user_id=int(payload["sub"]), jti=payload["jti"]
             ):
-                raise ValueError("Invalid token")
+                raise TokenNotFoundError(token=token)
         return payload
 
     async def revoke_refresh_token(self, user_id: int, jti: str) -> None:
-        self.auth_repo.delete_refresh_token(user_id, jti)
+        await self.auth_repo.delete_refresh_token(user_id, jti)
 
     def hash_password(self, password: str) -> bytes:
         return hash_password(password)
 
-    def check_password(self, password: str, hashed_password: bytes) -> bool:
+    def check_password(self, password: str, hashed_password: str) -> bool:
         return check_password(password, hashed_password)

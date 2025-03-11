@@ -1,6 +1,7 @@
-import redis.asyncio as aioredis
+from redis import asyncio as aioredis
 
 from src.config import settings
+from src.config import main_logger
 
 
 class AuthRepository:

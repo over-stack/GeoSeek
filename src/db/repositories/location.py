@@ -1,4 +1,4 @@
-import redis.asyncio as aioredis
+from redis import asyncio as aioredis
 
 from src.schemas.location import LocationScheme
 
@@ -8,12 +8,12 @@ class LocationRepository:
         self.rdb = rdb
 
     async def store_location(self, user_id: int, location: LocationScheme) -> None:
+        d = location.model_dump()
+        d.update({"gen_at": str(d["gen_at"])})
         await self.rdb.hset(
             f"loc:{user_id}",
-            mapping=location.model_dump(),
+            mapping=d,
         )
-
-        await self.rdb.expire(f"loc:{user_id}", 24 * 60 * 60)
 
     async def get_location(self, user_id: int) -> LocationScheme | None:
         loc = await self.rdb.hgetall(f"loc:{user_id}")

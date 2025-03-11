@@ -4,7 +4,7 @@ from src.services.location import LocationService
 from src.schemas.location import LocationScheme, LocationStatus
 from src.db.repositories.location import LocationRepository
 from src.api.dependecies.dbs import get_redis_client
-import redis.asyncio as aioredis
+from redis import asyncio as aioredis
 
 
 def get_location_repository(rdb: aioredis.Redis = Depends(get_redis_client)):

@@ -6,11 +6,18 @@ from typing import TYPE_CHECKING
 from typing import Generator
 from pydantic_settings import SettingsConfigDict, BaseSettings
 from pydantic import BaseModel, ConfigDict
-
+import yaml
 
 PROJECT_DIR: Path = Path(__file__).parent.parent.parent
 BASE_DIR: Path = Path(__file__).parent.parent
 STORAGE_DIR: Path = Path(__file__).parent.parent.parent / "storage"
+
+with open(BASE_DIR / "config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+
+
+class AppParams(BaseModel):
+    LOCATION_RADIUS: float = config["LOCATION_RADIUS"]
 
 
 class AuthJWT(BaseModel):
@@ -48,6 +55,7 @@ class Credentials(BaseSettings):
 class Settings(BaseSettings):
     auth_jwt: AuthJWT = AuthJWT()
     creds: Credentials = Credentials()
+    params: AppParams = AppParams()
 
     api_v1_prefix: str = "/api/v1"
 

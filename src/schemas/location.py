@@ -4,9 +4,9 @@ from .base import BaseScheme
 
 
 class LocationStatus(Enum):
-    SUCCESS = 0
-    CANCELLED = 1
-    FAILURE = 2
+    SUCCESS = "SUCCESS"
+    CANCELLED = "CANCELLED"
+    FAILURE = "FAILURE"
 
 
 class LocationScheme(BaseScheme):

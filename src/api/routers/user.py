@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer
 from src.services.user import UserService
 from src.schemas.user import UserCreate, UserRead
@@ -12,9 +12,11 @@ from src.api.dependecies.user import (
     validate_token_type,
     get_token_jti,
 )
+from src.api.dependecies.dbs import get_redis_client
 from src.schemas.auth import TokenInfo, TokenType
 from src.api.schemas.responses import Tokens
 from src.config import settings
+from redis import asyncio as aioredis
 
 
 router = APIRouter(prefix=f"{settings.api_v1_prefix}/users", tags=["users"])
@@ -82,3 +84,30 @@ async def logout_user(
         )
     await auth_service.revoke_refresh_token(user_id, jti)
     return {"message": "User logged out"}
+
+
+@router.post("/refresh", response_model=Tokens)
+async def refresh_token(
+    user_id: int = Depends(get_user_id_from_token),
+    jti: str = Depends(get_token_jti),
+    auth_service: AuthService = Depends(get_auth_service),
+    user_service: UserService = Depends(get_user_service),
+    _=Depends(validate_token_type(TokenType.REFRESH)),
+):
+    db_user = await user_service.get_user_by_id(user_id)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials"
+        )
+
+    if not await auth_service.auth_repo.check_refresh_token(user_id, jti):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials"
+        )
+
+    await auth_service.revoke_refresh_token(user_id, jti)
+
+    access_token = auth_service.issue_access_token(db_user)
+    refresh_token = await auth_service.issue_refresh_token(db_user)
+
+    return Tokens(access_token=access_token, refresh_token=refresh_token)

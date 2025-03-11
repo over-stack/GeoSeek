@@ -44,5 +44,5 @@ redis_service = RedisConnector(
     host=settings.creds.REDIS_HOST,
     port=settings.creds.REDIS_PORT,
     password=settings.creds.REDIS_PASSWORD,
-    db=0,
+    db=settings.creds.REDIS_DB,
 )

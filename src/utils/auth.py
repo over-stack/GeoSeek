@@ -34,7 +34,7 @@ def encode_jwt(
 
 
 def decode_jwt(
-    token: str | bytes,
+    token: str,
     public_key: str = settings.auth_jwt.public_key_path.read_text(),
     algorithm: str = settings.auth_jwt.algorithm,
 ) -> dict:
@@ -44,14 +44,14 @@ def decode_jwt(
 
 def hash_password(
     password: str,
-) -> bytes:
+) -> str:
     salt = bcrypt.gensalt()
     pwd_bytes = password.encode()
-    return bcrypt.hashpw(pwd_bytes, salt)
+    return bcrypt.hashpw(pwd_bytes, salt).decode()
 
 
 def check_password(
     password: str,
-    hashed_password: bytes,
+    hashed_password: str,
 ) -> bool:
-    return bcrypt.checkpw(password.encode(), hashed_password)
+    return bcrypt.checkpw(password.encode(), hashed_password.encode())
